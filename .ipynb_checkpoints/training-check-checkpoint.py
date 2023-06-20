@@ -45,8 +45,21 @@ def categorise_temporal_alteration_level(row, alteration_levels):
     elif row['SensoMotoric Delay'] == alteration_levels[2]:
         return '4'
 
-print(glob.glob(params.training_trials_path))
 results = pd.read_csv(glob.glob(params.training_results_path)[0])
 trials = pd.read_csv(glob.glob(params.training_trials_path)[0])
 trials.drop(trials.tail(1).index, inplace = True)
 trials.rename(columns = {'#trial number':'TrialNumber'}, inplace = True)
+merged = pd.merge(results, trials, on='TrialNumber')
+
+# create the preprocessed dir if doesnt exist, empties if it does exist.
+if not os.path.exists(params.preprocessed_output_dir):
+        os.makedirs(params.preprocessed_output_dir)
+else:
+    for file in os.listdir(params.preprocessed_output_dir):
+        os.remove(params.preprocessed_output_dir + "/" + file)
+        
+merged_clean = merged[['TrialNumber', 'block number', 'SensoMotoric Delay', 'angleChange','setup task Number', 'QuestionResult']]
+merged_clean.to_csv(params.preprocessed_output_dir + "/preprocessed_training.csv", index = False)
+    
+# create output dir with jpgs and subject ids, training type, date.
+# choose between self-attribution or correct % to display.

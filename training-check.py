@@ -10,4 +10,43 @@ import glob
 import numpy as np
 import params
 
-print(params.data_dir)
+# Functions to categorise trials data to simpler columns.
+def categorise_correct(row):  
+    '''This function gets a row and returns yes if the subject was correct with his answer and no if he was incorrect'''
+    if (row['angleChange'] != 0 or row['SensoMotoric Delay'] != 0) and row['QuestionResult'] == 0 :
+        return 'yes'
+    elif row['angleChange'] == 0 and row['SensoMotoric Delay'] == 0 and row['QuestionResult'] == 1 :
+        return 'yes'
+    return 'no'
+
+def categorise_spatial_alteration_level(row, alteration_levels):  
+    '''This function gets a row and a list of alteration levels and returns the level of spatial alteration,
+    1 signifies no alteration''' 
+    alteration_levels.sort()
+    if row['angleChange'] == 0 :
+        return '1'
+    elif row['angleChange'] == alteration_levels[0] or row['angleChange'] == -1 * alteration_levels[0]:
+        return '2'
+    elif row['angleChange'] == alteration_levels[1] or row['angleChange'] == -1 * alteration_levels[1]:
+        return '3'
+    elif row['angleChange'] == alteration_levels[2] or row['angleChange'] == -1 * alteration_levels[2]:
+        return '4'
+    
+def categorise_temporal_alteration_level(row, alteration_levels):  
+    '''This function gets a row and a list of alteration levels and returns the level of temporal alteration,
+    1 signifies no alteration''' 
+    alteration_levels.sort()
+    if row['SensoMotoric Delay'] == 0 :
+        return '1'
+    elif row['SensoMotoric Delay'] == alteration_levels[0]:
+        return '2'
+    elif row['SensoMotoric Delay'] == alteration_levels[1]:
+        return '3'
+    elif row['SensoMotoric Delay'] == alteration_levels[2]:
+        return '4'
+
+print(glob.glob(params.training_trials_path))
+results = pd.read_csv(glob.glob(params.training_results_path)[0])
+trials = pd.read_csv(glob.glob(params.training_trials_path)[0])
+trials.drop(trials.tail(1).index, inplace = True)
+trials.rename(columns = {'#trial number':'TrialNumber'}, inplace = True)

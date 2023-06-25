@@ -71,6 +71,39 @@ data['temporalAlterationLevel'] = data.apply(lambda row:
 data['spatialAlterationLevel'] = data.apply(lambda row: 
                                             categorise_spatial_alteration_level(row, params.spatial_alteration_levels), axis=1)
 data.to_csv(params.preprocessed_output_dir + "/categorised_training.csv", index=False)
+
+# Empty dataframe to save calculations.
+scores = pd.DataFrame(columns=['TrainingType', 'L1', 'L2', 'L3', 'L4'])
+
+row = [] # Initialize the trainings row
+categorised_data = pd.read_csv(params.preprocessed_output_dir + "/categorised_training.csv")
+if len(set(categorised_data.angleChange.tolist()))==1:
+    # 1 level of angelchange means temporal training
+    trainingtype = "Temporal"
+    row.append(trainingtype) # TrainingType
+    # L1, L2, L3, L4
+    for level in range(1, len(set(categorised_data['temporalAlterationLevel'].tolist())) + 1):
+        row.append(round((len(categorised_data.loc[(categorised_data['temporalAlterationLevel'] == level) &
+                                         (categorised_data['QuestionResult'] == 1)])/
+                          len(categorised_data.loc[(categorised_data['temporalAlterationLevel'] == level)]) * 100), 3))
+else:
+    # more than 1 level of angelchange means spatial training
+    trainingtype = "Spatial"
+    row.append(trainingtype) # TrainingType
+    # L1, L2, L3, L4
+    for level in range(1, len(set(categorised_data['spatialAlterationLevel'].tolist())) + 1):
+        row.append(round((len(categorised_data.loc[(categorised_data['spatialAlterationLevel'] == level) &
+                                         (categorised_data['QuestionResult'] == 1)])/
+                          len(categorised_data.loc[(categorised_data['spatialAlterationLevel'] == level)]) * 100), 3))
+scores.loc[len(scores)] = row
+subject_num = os.listdir(params.data_dir)[0].split('_Plan')[0] # subject number
+date_n_time = os.listdir(params.data_dir)[0].split('RunID-')[1] # date and time
+
+# create results output dir if doesnt exist
+if not os.path.exists(params.results_output_dir):
+        os.makedirs(params.results_output_dir)
+        
+scores.to_csv(params.results_output_dir + "/" + subject_num + "_" + trainingtype + "_" + date_n_time + ".csv", index=False)
     
     
     

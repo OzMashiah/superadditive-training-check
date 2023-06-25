@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import glob
 import params
+import sys
 
 # Functions to categorise trials data to simpler columns.
 def categorise_correct(row):  
@@ -39,6 +40,13 @@ def categorise_temporal_alteration_level(row, alteration_levels):
         return '3'
     elif row['SensoMotoric Delay'] == alteration_levels[2]:
         return '4'
+
+# make sure the data_dir exists and has only one folder in it.
+if not os.path.exists(params.data_dir):
+    sys.exit("The " + params.data_dir + " folder does not exists")
+else:
+    if not len(os.listdir(params.data_dir)) == 1:
+        sys.exit("There is more or less than one file in the " + params.data_dir + " folder")
 
 # merge results and trials files.
 results = pd.read_csv(glob.glob(params.training_results_path)[0])

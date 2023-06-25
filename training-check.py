@@ -1,11 +1,7 @@
 import pandas as pd
+from pandas.plotting import table 
 import os
 import matplotlib.pyplot as plt
-#import seaborn as sns
-#import statsmodels.api as sm
-import scipy
-#import scikit_posthocs as sp
-import re
 import glob
 import numpy as np
 import params
@@ -84,7 +80,7 @@ if len(set(categorised_data.angleChange.tolist()))==1:
     # L1, L2, L3, L4
     for level in range(1, len(set(categorised_data['temporalAlterationLevel'].tolist())) + 1):
         row.append(round((len(categorised_data.loc[(categorised_data['temporalAlterationLevel'] == level) &
-                                         (categorised_data['QuestionResult'] == 1)])/
+                                         (categorised_data['correct'] == 'yes')])/
                           len(categorised_data.loc[(categorised_data['temporalAlterationLevel'] == level)]) * 100), 3))
 else:
     # more than 1 level of angelchange means spatial training
@@ -93,7 +89,7 @@ else:
     # L1, L2, L3, L4
     for level in range(1, len(set(categorised_data['spatialAlterationLevel'].tolist())) + 1):
         row.append(round((len(categorised_data.loc[(categorised_data['spatialAlterationLevel'] == level) &
-                                         (categorised_data['QuestionResult'] == 1)])/
+                                         (categorised_data['correct'] == 'yes')])/
                           len(categorised_data.loc[(categorised_data['spatialAlterationLevel'] == level)]) * 100), 3))
 scores.loc[len(scores)] = row
 subject_num = os.listdir(params.data_dir)[0].split('_Plan')[0] # subject number
@@ -102,12 +98,17 @@ date_n_time = os.listdir(params.data_dir)[0].split('RunID-')[1] # date and time
 # create results output dir if doesnt exist
 if not os.path.exists(params.results_output_dir):
         os.makedirs(params.results_output_dir)
-        
-scores.to_csv(params.results_output_dir + "/" + subject_num + "_" + trainingtype + "_" + date_n_time + ".csv", index=False)
-    
-    
-    
-    
-    
-# create output dir with jpgs and subject ids, training type, date.
-# choose between self-attribution or correct % to display.
+
+# Option to export as csv.        
+#scores.to_csv(params.results_output_dir + "/" + subject_num + "_" + trainingtype + "_" + date_n_time + ".csv", index=False)
+
+# Export scores as a png (default)
+ax = plt.subplot(111, frame_on=False) # no visible frame
+ax.xaxis.set_visible(False)  # hide the x axis
+ax.yaxis.set_visible(False)  # hide the y axis
+ax.set_title(subject_num + " " + trainingtype + " Training (correct percentage)")
+
+table(ax, scores.filter(regex=("L\d+$")),
+     loc = "center")  
+
+plt.savefig(params.results_output_dir + "/" + subject_num + "_" + trainingtype + "_" + date_n_time + ".png")

@@ -45,6 +45,7 @@ def categorise_temporal_alteration_level(row, alteration_levels):
     elif row['SensoMotoric Delay'] == alteration_levels[2]:
         return '4'
 
+# merge results and trials files.
 results = pd.read_csv(glob.glob(params.training_results_path)[0])
 trials = pd.read_csv(glob.glob(params.training_trials_path)[0])
 trials.drop(trials.tail(1).index, inplace = True)
@@ -60,6 +61,20 @@ else:
         
 merged_clean = merged[['TrialNumber', 'block number', 'SensoMotoric Delay', 'angleChange','setup task Number', 'QuestionResult']]
 merged_clean.to_csv(params.preprocessed_output_dir + "/preprocessed_training.csv", index = False)
+    
+# Calculate the simpler necessary columns using the categorise functions in order to continue with further analysis.
+data = pd.read_csv(params.preprocessed_output_dir +  "/preprocessed_training.csv")
+data.drop(data.loc[data['setup task Number']==66].index, inplace=True)
+data['correct'] = data.apply(lambda row: categorise_correct(row), axis=1)
+data['temporalAlterationLevel'] = data.apply(lambda row: 
+                                            categorise_temporal_alteration_level(row, params.temporal_alteration_levels), axis=1)
+data['spatialAlterationLevel'] = data.apply(lambda row: 
+                                            categorise_spatial_alteration_level(row, params.spatial_alteration_levels), axis=1)
+data.to_csv(params.preprocessed_output_dir + "/categorised_training.csv", index=False)
+    
+    
+    
+    
     
 # create output dir with jpgs and subject ids, training type, date.
 # choose between self-attribution or correct % to display.

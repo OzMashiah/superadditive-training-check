@@ -3,7 +3,6 @@ from pandas.plotting import table
 import os
 import matplotlib.pyplot as plt
 import glob
-import numpy as np
 import params
 
 # Functions to categorise trials data to simpler columns.
@@ -107,7 +106,6 @@ ax = plt.subplot(111, frame_on=False) # no visible frame
 ax.xaxis.set_visible(False)  # hide the x axis
 ax.yaxis.set_visible(False)  # hide the y axis
 ax.set_title(subject_num + " " + trainingtype + " Training (correct percentage)")
-
 table(ax, scores.filter(regex=("L\d+$")),
      loc = "center")  
 
